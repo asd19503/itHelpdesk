@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Manage Users</h1>
+
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.role == 'admin' %}
+                    <span class="badge bg-danger">Admin</span>
+                    {% else %}
+                    <span class="badge bg-info">User</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" {% if user.role == 'admin' %}disabled{% endif %}>Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

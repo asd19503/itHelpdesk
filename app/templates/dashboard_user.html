@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">My Tickets</h1>
+
+    <!-- User Tickets Section -->
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in user_tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.title }}</td>
+                <td><span class="badge bg-info">{{ ticket.status }}</span></td>
+                <td>{{ ticket.assignee.username if ticket.assignee else "Unassigned" }}</td>
+                <td>
+                    <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
