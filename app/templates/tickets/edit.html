@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ ticket.title if ticket else "Create Ticket" }}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
     <div class="container my-5">
         <h1 class="text-center mb-4">{{ "Edit Ticket" if ticket else "Create New Ticket" }}</h1>
 
@@ -26,7 +19,11 @@
 
             <div class="mb-3">
                 {{ form.status.label(class="form-label") }}
-                {{ form.status(class="form-select") }}
+                {% if current_user.role == 'admin' %}
+                    {{ form.status(class="form-select") }}
+                {% else %}
+                    {{ form.status(class="form-select", disabled=True) }}
+                {% endif %}
             </div>
 
             <div class="mb-3">
@@ -38,8 +35,4 @@
             <a href="{{ url_for('tickets.list_tickets') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

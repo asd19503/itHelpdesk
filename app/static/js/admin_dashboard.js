@@ -1,3 +1,8 @@
+// Hàm capitalize chuỗi
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 function loadTickets(status) {
     const titles = {
         total: "All Tickets",
@@ -6,28 +11,43 @@ function loadTickets(status) {
         closed: "Closed Tickets"
     };
 
-    // Cập nhật tiêu đề trong modal
+    // Cập nhật tiêu đề modal
     document.getElementById('tickets-title').innerText = titles[status] || "Tickets";
 
-    // Gửi yêu cầu AJAX tới API
     fetch(`/admin/api/tickets/${status}`)
         .then(response => response.json())
         .then(data => {
             const ticketsBody = document.getElementById('tickets-body');
 
-            // Xóa dữ liệu cũ trong bảng
+            // Xóa dữ liệu cũ
             ticketsBody.innerHTML = "";
 
-            // Thêm dữ liệu mới vào bảng
+            // Thêm dữ liệu mới
             if (data.tickets && data.tickets.length > 0) {
                 data.tickets.forEach((ticket) => {
-                    const row = `<tr>
-                        <td>${ticket.id}</td>
-                        <td>${ticket.title}</td>
-                        <td>${ticket.description}</td>
-                        <td>${ticket.status}</td>
-                    </tr>`;
+                    const row = `
+                        <tr class="clickable-row" data-ticket-id="${ticket.id}">
+                            <td>${ticket.id}</td>
+                            <td>${ticket.title}</td>
+                            <td>${ticket.description}</td>
+                            <td>
+                                <span class="badge 
+                                    ${ticket.status === 'new' ? 'bg-info' : 
+                                       ticket.status === 'in_progress' ? 'bg-warning text-dark' : 
+                                       'bg-success'}">
+                                    ${capitalizeFirstLetter(ticket.status.replace('_', ' '))}
+                                </span>
+                            </td>
+                        </tr>`;
                     ticketsBody.innerHTML += row;
+                });
+
+                // Thêm sự kiện click vào từng dòng
+                document.querySelectorAll('.clickable-row').forEach(row => {
+                    row.addEventListener('click', function () {
+                        const ticketId = this.getAttribute('data-ticket-id');
+                        window.location.href = `/tickets/${ticketId}`;
+                    });
                 });
             } else {
                 ticketsBody.innerHTML = `<tr><td colspan="4" class="text-center">No tickets found.</td></tr>`;

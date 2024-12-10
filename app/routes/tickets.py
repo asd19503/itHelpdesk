@@ -7,11 +7,15 @@ from app import db
 
 tickets_bp = Blueprint('tickets', __name__)
 
-# View All Tickets
-@tickets_bp.route('/', methods=['GET'])
+@tickets_bp.route('/list', methods=['GET'])
 @login_required
 def list_tickets():
-    tickets = Ticket.query.all()
+    if current_user.role == 'admin':
+        # Nếu là admin, hiển thị tất cả ticket
+        tickets = Ticket.query.all()
+    else:
+        # Nếu không phải admin, chỉ hiển thị ticket của user đó
+        tickets = Ticket.query.filter_by(created_by=current_user.id).all()
     return render_template('tickets/list.html', tickets=tickets)
 
 # Create Ticket
@@ -57,12 +61,13 @@ def edit_ticket(ticket_id):
     return render_template('tickets/edit.html', form=form, ticket=ticket)
 
 
-# Delete Ticket
-@tickets_bp.route('/<int:ticket_id>/delete', methods=['POST'])
+@tickets_bp.route('/delete/<int:ticket_id>', methods=['POST'])
 @login_required
 def delete_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if ticket.created_by != current_user.id:
+
+    # Chỉ cho phép xóa nếu là admin hoặc creator với trạng thái "new"
+    if not (current_user.role == 'admin' or (ticket.creator.id == current_user.id and ticket.status == 'new')):
         flash('You are not authorized to delete this ticket.', 'danger')
         return redirect(url_for('tickets.list_tickets'))
 
@@ -70,3 +75,31 @@ def delete_ticket(ticket_id):
     db.session.commit()
     flash('Ticket deleted successfully!', 'success')
     return redirect(url_for('tickets.list_tickets'))
+
+
+@tickets_bp.route('/<int:ticket_id>', methods=['GET', 'POST'])
+@login_required
+def view_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+
+    # Chỉ admin hoặc người được phân quyền có thể thay đổi trạng thái
+    if current_user.is_admin() and ticket.status == 'new':
+        ticket.status = 'in_progress'
+        db.session.commit()
+
+    return render_template('tickets/ticket_detail.html', ticket=ticket)
+
+
+@tickets_bp.route('/<int:ticket_id>/close', methods=['POST'])
+@login_required
+def close_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+
+    if not current_user.is_admin():
+        flash("You are not authorized to close this ticket.", "danger")
+        return redirect(url_for('tickets.view_ticket', ticket_id=ticket_id))
+
+    ticket.status = 'closed'
+    db.session.commit()
+    flash(f"Ticket {ticket.title} marked as completed.", "success")
+    return redirect(url_for('tickets.view_ticket', ticket_id=ticket_id, ticket=ticket))

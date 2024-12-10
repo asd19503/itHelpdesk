@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.models.ticket import Ticket
 
@@ -12,6 +12,11 @@ def index():
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
+    if not current_user.is_authenticated:
+        # Nếu chưa đăng nhập, redirect đến trang login với thông báo
+        flash("You need to log in to access the dashboard.", "warning")
+        return redirect(url_for('auth.login'))
+
     if current_user.is_admin():
         # Admin Dashboard
         total_tickets = Ticket.query.count()
@@ -27,9 +32,9 @@ def dashboard():
         )
     else:
         # User Dashboard
-        user_tickets = Ticket.query.filter_by(created_by=current_user.id).all()
+        tickets = Ticket.query.filter_by(created_by=current_user.id).all()
         return render_template(
-            'dashboard_user.html',
-            user_tickets=user_tickets
+            'tickets/list.html',
+            tickets=tickets
         )
 

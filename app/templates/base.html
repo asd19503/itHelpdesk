@@ -18,6 +18,9 @@
             text-align: center;
             margin-top: 50px;
         }
+        .clickable-row {
+        cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -31,16 +34,28 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('tickets.list_tickets') }}">Tickets</a>
+                        {% if current_user.is_authenticated and current_user.role != 'admin' %}
+                            <a class="nav-link" href="{{ url_for('tickets.create_ticket') }}">Tickets</a>
+                        {% endif %}
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                        {% if not current_user.is_authenticated %}
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                        {% endif %}
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                        {% if not current_user.is_authenticated %}
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                        {% endif %}
                     </li>
                      <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                            {% if current_user.is_authenticated and current_user.role != 'admin' %}
+                                Your Tickets
+                            {% else %}
+                                Dashboard
+                            {% endif %}
+                        </a>
                     </li>
                     {% if current_user.is_authenticated and current_user.is_admin() %}
                     <li class="nav-item">

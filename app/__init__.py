@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, AnonymousUserMixin
 
+
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -20,6 +21,11 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+
+    # Cấu hình đường dẫn khi người dùng chưa đăng nhập
+    login_manager.login_view = 'auth.login'  # Route login
+    login_manager.login_message = "You need to log in to access this page."  # Thông báo
+    login_manager.login_message_category = "warning"  # Loại thông báo (Bootstrap)
 
     # Register Blueprints
     from app.routes.main import main_bp
@@ -43,3 +49,5 @@ def create_app():
 def load_user(user_id):
     from app.models import User
     return User.query.get(int(user_id))
+
+

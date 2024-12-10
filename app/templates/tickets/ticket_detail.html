@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center">Ticket Details</h1>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Title: {{ ticket.title }}</h5>
+            <p class="card-text"><strong>Description:</strong> {{ ticket.description }}</p>
+            <p class="card-text">
+                <strong>Status:</strong>
+                <span class="badge 
+                    {% if ticket.status == 'new' %} bg-info
+                    {% elif ticket.status == 'in_progress' %} bg-warning text-dark
+                    {% elif ticket.status == 'closed' %} bg-success
+                    {% endif %}">
+                    {{ ticket.status.replace('_', ' ').capitalize() }}
+                </span>
+            </p>
+            <p class="card-text"><strong>Created By:</strong> {{ ticket.creator.username }}</p>
+            {% if ticket.assigned_to %}
+                <p class="card-text"><strong>Assigned To:</strong> {{ ticket.assignee.username }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if current_user.is_admin() %}
+        <div class="mt-4">
+            {% if ticket.status != 'closed' %}
+                <form action="{{ url_for('tickets.close_ticket', ticket_id=ticket.id) }}" method="POST">
+                    <button type="submit" class="btn btn-success">Mark as Completed</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('tickets.list_tickets') }}" class="btn btn-primary">Back to Tickets</a>
+    </div>
+</div>
+{% endblock %}
